@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" ng-app>
+  <head>
+    <title>Socket.io example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/main.css">
+    <script>
+      window.onload = function(){
+        var socket = io.connect();
+  
+        socket.on('connect', function () {
+          console.log('[CLIENT] on:connect', arguments);
+          addLine('[CLIENT] connected');
+        });
+  
+        socket.on('message', function (msg) {
+          console.log('[CLIENT] on:message', arguments);
+          addLine('[CLIENT] message: \n' + msg);
+        });
+        
+        var input = document.getElementById('message');
+        
+        input.addEventListener('change', function(e){
+          socket.emit('message', e.target.value);
+          input.value = '';
+        });
+        
+        // socket.emit('identify', $scope.name);
+        // socket.emit('message', $scope.text);
+      };
+      
+      function addLine(content){
+        var el = document.createElement('div');
+        el.innerHTML = content;
+        document.getElementById('content').appendChild(el);
+      }
+    </script>
+  </head>
+  <body>
+    <div id='content'>
+      <input type="text" name="message" id="message" />
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+  </body>
+</html>
