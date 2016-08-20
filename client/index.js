@@ -1,6 +1,8 @@
-var socket = require('./socket.js');
+var socket = require('./src/socket.js');
 
 window.onload = function(){
+    
+    console.log('phaser', Phaser);
     
     socket.on('connect', function () {
       console.log('[CLIENT] on:connect', arguments);
