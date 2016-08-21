@@ -3,10 +3,7 @@ var Play = require('./src/game.js');
 
 window.onload = function(){
   
-    var game = new Phaser.Game(
-      window.innerWidth, 
-      window.innerHeight, 
-      Phaser.AUTO);
+    var game = new Phaser.Game(560, 272, Phaser.AUTO);
       
     game.state.add('Play', Play);
     game.state.start('Play');
