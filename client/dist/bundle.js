@@ -55,11 +55,11 @@
 	  
 	    var gameClient = new GameClient(io, {
 	      verbose: true, 
-	      onConnect: function(){
-	        addLine('[CLIENT] on:connect');
+	      onConnect: function(socket){
+	        addLine('[CLIENT] '+ socket.id +' connected');
 	      }, 
-	      onMessage: function(msg){
-	        addLine('[CLIENT] message: \n' + msg);
+	      onMessage: function(message){
+	        addLine('[CLIENT] '+ message.sender +' message: \n' + message.payload);
 	      }
 	    });
 	  
@@ -71,7 +71,10 @@
 	    var input = document.getElementById('message');
 	    
 	    input.addEventListener('change', function(e){
-	      gameClient.forAll(e.target.value);
+	      gameClient.forAll({
+	        sender: gameClient.socket.id, 
+	        payload: e.target.value
+	      });
 	      input.value = '';
 	    });
 	    
@@ -7942,16 +7945,16 @@
 	    };
 	    
 	    this.socket.on('connect', function() {
-	      this.log('[CLIENT] on:connect');
+	      this.log('[CLIENT] %s connected', this.socket.id);
 	      if(options.onConnect){
-	         options.onConnect(); 
+	         options.onConnect.call(null, this.socket); 
 	      }
 	    }.bind(this));
 	    
-	    this.socket.on('message', function(msg) {
-	      this.log('[CLIENT] on:message', msg);
+	    this.socket.on('message', function(message) {
+	      this.log('[CLIENT] on:message', message);
 	      if(options.onMessage){
-	         options.onMessage.call(null, msg); 
+	         options.onMessage.call(null, message); 
 	      }
 	    }.bind(this));
 	    

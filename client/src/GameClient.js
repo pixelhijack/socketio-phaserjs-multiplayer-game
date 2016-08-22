@@ -15,16 +15,16 @@ function GameCLient(io, options){
     };
     
     this.socket.on('connect', function() {
-      this.log('[CLIENT] on:connect');
+      this.log('[CLIENT] %s connected', this.socket.id);
       if(options.onConnect){
-         options.onConnect(); 
+         options.onConnect.call(null, this.socket); 
       }
     }.bind(this));
     
-    this.socket.on('message', function(msg) {
-      this.log('[CLIENT] on:message', msg);
+    this.socket.on('message', function(message) {
+      this.log('[CLIENT] on:message', message);
       if(options.onMessage){
-         options.onMessage.call(null, msg); 
+         options.onMessage.call(null, message); 
       }
     }.bind(this));
     

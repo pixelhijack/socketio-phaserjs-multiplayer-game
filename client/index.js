@@ -6,11 +6,11 @@ window.onload = function(){
   
     var gameClient = new GameClient(io, {
       verbose: true, 
-      onConnect: function(){
-        addLine('[CLIENT] on:connect');
+      onConnect: function(socket){
+        addLine('[CLIENT] '+ socket.id +' connected');
       }, 
-      onMessage: function(msg){
-        addLine('[CLIENT] message: \n' + msg);
+      onMessage: function(message){
+        addLine('[CLIENT] '+ message.sender +' message: \n' + message.payload);
       }
     });
   
@@ -22,7 +22,10 @@ window.onload = function(){
     var input = document.getElementById('message');
     
     input.addEventListener('change', function(e){
-      gameClient.forAll(e.target.value);
+      gameClient.forAll({
+        sender: gameClient.socket.id, 
+        payload: e.target.value
+      });
       input.value = '';
     });
     
