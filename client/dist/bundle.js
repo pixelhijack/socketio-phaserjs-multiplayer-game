@@ -47,30 +47,31 @@
   \*************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var socket = __webpack_require__(/*! ./src/socket.js */ 1);
+	var GameClient = __webpack_require__(/*! ./src/GameClient.js */ 53);
 	var Play = __webpack_require__(/*! ./src/game.js */ 52);
+	var io = __webpack_require__(/*! socket.io-client */ 2);
 	
 	window.onload = function(){
+	  
+	    var gameClient = new GameClient(io, {
+	      verbose: true, 
+	      onConnect: function(){
+	        addLine('[CLIENT] on:connect');
+	      }, 
+	      onMessage: function(msg){
+	        addLine('[CLIENT] message: \n' + msg);
+	      }
+	    });
 	  
 	    var game = new Phaser.Game(560, 272, Phaser.AUTO);
 	      
 	    game.state.add('Play', Play);
 	    game.state.start('Play');
 	    
-	    socket.on('connect', function () {
-	      console.log('[CLIENT] on:connect', arguments);
-	      addLine('[CLIENT] connected');
-	    });
-	    
-	    socket.on('message', function (msg) {
-	      console.log('[CLIENT] on:message', arguments);
-	      addLine('[CLIENT] message: \n' + msg);
-	    });
-	    
 	    var input = document.getElementById('message');
 	    
 	    input.addEventListener('change', function(e){
-	      socket.emit('message', e.target.value);
+	      gameClient.forAll(e.target.value);
 	      input.value = '';
 	    });
 	    
@@ -85,19 +86,7 @@
 	}
 
 /***/ },
-/* 1 */
-/*!******************************!*\
-  !*** ./client/src/socket.js ***!
-  \******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	var io = __webpack_require__(/*! socket.io-client */ 2);
-	
-	var socket = io.connect();
-	
-	module.exports = socket;
-
-/***/ },
+/* 1 */,
 /* 2 */
 /*!*****************************************!*\
   !*** ./~/socket.io-client/lib/index.js ***!
@@ -7928,6 +7917,47 @@
 	}
 	
 	module.exports = Play;
+
+/***/ },
+/* 53 */
+/*!**********************************!*\
+  !*** ./client/src/GameClient.js ***!
+  \**********************************/
+/***/ function(module, exports) {
+
+	function GameCLient(io, options){
+	    options = options || {};
+	    var verbose = options.verbose || false;
+	    
+	    this.socket = io.connect();
+	    
+	    this.log = function(){
+	        if(verbose){
+	            console.info.apply(this, arguments);
+	        }
+	    };
+	    
+	    this.forAll = function(msg){
+	        this.socket.emit('message', msg);
+	    };
+	    
+	    this.socket.on('connect', function() {
+	      this.log('[CLIENT] on:connect');
+	      if(options.onConnect){
+	         options.onConnect(); 
+	      }
+	    }.bind(this));
+	    
+	    this.socket.on('message', function(msg) {
+	      this.log('[CLIENT] on:message', msg);
+	      if(options.onMessage){
+	         options.onMessage.call(null, msg); 
+	      }
+	    }.bind(this));
+	    
+	}
+	
+	module.exports = GameCLient;
 
 /***/ }
 /******/ ]);

@@ -1,27 +1,28 @@
-var socket = require('./src/socket.js');
+var GameClient = require('./src/GameClient.js');
 var Play = require('./src/game.js');
+var io = require('socket.io-client');
 
 window.onload = function(){
+  
+    var gameClient = new GameClient(io, {
+      verbose: true, 
+      onConnect: function(){
+        addLine('[CLIENT] on:connect');
+      }, 
+      onMessage: function(msg){
+        addLine('[CLIENT] message: \n' + msg);
+      }
+    });
   
     var game = new Phaser.Game(560, 272, Phaser.AUTO);
       
     game.state.add('Play', Play);
     game.state.start('Play');
     
-    socket.on('connect', function () {
-      console.log('[CLIENT] on:connect', arguments);
-      addLine('[CLIENT] connected');
-    });
-    
-    socket.on('message', function (msg) {
-      console.log('[CLIENT] on:message', arguments);
-      addLine('[CLIENT] message: \n' + msg);
-    });
-    
     var input = document.getElementById('message');
     
     input.addEventListener('change', function(e){
-      socket.emit('message', e.target.value);
+      gameClient.forAll(e.target.value);
       input.value = '';
     });
     
