@@ -1,9 +1,13 @@
-function Play(){
+function FrogmanVsMinotaur(){
   
   var frogman, 
       minotaur;
       
   var keys;
+  
+  this.init = function(config){
+    console.log('[Phaser] init', config);
+  };
   
   this.preload = function(){
     console.log('[Phaser] preload');
@@ -15,7 +19,7 @@ function Play(){
     console.log('[Phaser] create');
     
     this.game.stage.backgroundColor = "#FFFFFF";
-    this.game.add.tileSprite(0, 0, 560, 272, 'background');
+    this.game.add.tileSprite(0, 0, this.game.width, this.game.height, 'background');
     
     frogman = this.game.add.sprite(350, 245, 'characters');
     frogman.animations.add('walk', ['02', '04', '05', '07', '09', '10'], 10, true);
@@ -58,4 +62,4 @@ function Play(){
   };
 }
 
-module.exports = Play;
+module.exports = FrogmanVsMinotaur;

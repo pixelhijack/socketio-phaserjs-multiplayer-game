@@ -42,13 +42,13 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/*!*************************!*\
-  !*** ./client/index.js ***!
-  \*************************/
+/*!**************************!*\
+  !*** ./client/client.js ***!
+  \**************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var SocketClient = __webpack_require__(/*! ./src/SocketClient.js */ 53);
-	var Play = __webpack_require__(/*! ./src/game.js */ 2);
+	var SocketClient = __webpack_require__(/*! ./src/SocketClient.js */ 1);
+	var GameClient = __webpack_require__(/*! ./src/GameClient.js */ 53);
 	var io = __webpack_require__(/*! socket.io-client */ 3);
 	
 	window.onload = function(){
@@ -62,11 +62,14 @@
 	        addLine('[CLIENT] '+ message.sender +' message: \n' + message.payload);
 	      }
 	    });
-	  
-	    var game = new Phaser.Game(560, 272, Phaser.AUTO);
-	      
-	    game.state.add('Play', Play);
-	    game.state.start('Play');
+	    
+	    var gameClient = new GameClient({});
+	    
+	    gameClient.initialize({
+	      width: 560,
+	      height: 272
+	    });
+	    gameClient.start({});
 	    
 	    var input = document.getElementById('message');
 	    
@@ -89,76 +92,48 @@
 	}
 
 /***/ },
-/* 1 */,
-/* 2 */
-/*!****************************!*\
-  !*** ./client/src/game.js ***!
-  \****************************/
+/* 1 */
+/*!************************************!*\
+  !*** ./client/src/SocketClient.js ***!
+  \************************************/
 /***/ function(module, exports) {
 
-	function Play(){
-	  
-	  var frogman, 
-	      minotaur;
-	      
-	  var keys;
-	  
-	  this.preload = function(){
-	    console.log('[Phaser] preload');
-	    this.game.load.image('background', '../assets/background.gif');
-	    this.game.load.atlas('characters', '../assets/spritesheet.png', '../assets/sprites.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
-	  };
-	  
-	  this.create = function(){
-	    console.log('[Phaser] create');
+	function GameCLient(io, options){
+	    options = options || {};
+	    var verbose = options.verbose || false;
 	    
-	    this.game.stage.backgroundColor = "#FFFFFF";
-	    this.game.add.tileSprite(0, 0, 560, 272, 'background');
+	    this.socket = io.connect();
 	    
-	    frogman = this.game.add.sprite(350, 245, 'characters');
-	    frogman.animations.add('walk', ['02', '04', '05', '07', '09', '10'], 10, true);
-	    frogman.animations.add('attack', ['01', '03', '06', '08'], 10, true);
-	    frogman.scale.x = -1;
-	    frogman.anchor.setTo(0.5, 0.5);
+	    this.log = function(){
+	        if(verbose){
+	            console.info.apply(this, arguments);
+	        }
+	    };
 	    
-	    minotaur = this.game.add.sprite(40, 215, 'characters');
-	    minotaur.animations.add('stand', ['22'], 10, true);
-	    minotaur.animations.add('walk', ['18', '22', '25', '26'], 10, true);
-	    minotaur.animations.add('attack', ['16','20','24','27','28', '29'], 12, true);
-	    frogman.anchor.setTo(0.5, 0.5);
+	    this.forAll = function(msg){
+	        this.socket.emit('message', msg);
+	    };
 	    
-	    this.game.physics.enable(minotaur, Phaser.Physics.ARCADE);
+	    this.socket.on('connect', function() {
+	      this.log('[CLIENT] %s connected', this.socket.id);
+	      if(options.onConnect){
+	         options.onConnect.call(null, this.socket); 
+	      }
+	    }.bind(this));
 	    
-	    keys = this.game.input.keyboard.createCursorKeys();
-	    keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-	  };
-	  
-	  this.update = function(){
-	    console.log('[Phaser] update');
-	    frogman.animations.play('attack');
+	    this.socket.on('message', function(message) {
+	      this.log('[CLIENT] on:message', message);
+	      if(options.onMessage){
+	         options.onMessage.call(null, message); 
+	      }
+	    }.bind(this));
 	    
-	    if(keys.right.isDown){
-	        minotaur.animations.play('walk');
-	        minotaur.body.x += 1;
-	        minotaur.scale.x = 1;
-	    }
-	    else if(keys.left.isDown){
-	        minotaur.animations.play('walk');
-	        minotaur.body.x -= 1;
-	        minotaur.scale.x = -1;
-	    }
-	    else if(keys.space.isDown){
-	        minotaur.animations.play('attack');
-	    }
-	    else {
-	        minotaur.animations.play('stand');
-	    }
-	  };
 	}
 	
-	module.exports = Play;
+	module.exports = GameCLient;
 
 /***/ },
+/* 2 */,
 /* 3 */
 /*!*****************************************!*\
   !*** ./~/socket.io-client/lib/index.js ***!
@@ -7923,44 +7898,110 @@
 
 /***/ },
 /* 53 */
-/*!************************************!*\
-  !*** ./client/src/SocketClient.js ***!
-  \************************************/
-/***/ function(module, exports) {
+/*!**********************************!*\
+  !*** ./client/src/GameClient.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
 
-	function GameCLient(io, options){
+	var FrogmanVsMinotaur = __webpack_require__(/*! ./FrogmanVsMinotaur.js */ 55);
+	
+	function GameClient(options){
 	    options = options || {};
-	    var verbose = options.verbose || false;
+	    this.role = options.role || '';
 	    
-	    this.socket = io.connect();
+	    this.game = undefined;
 	    
-	    this.log = function(){
-	        if(verbose){
-	            console.info.apply(this, arguments);
-	        }
+	    this.setState = function(){
+	        
 	    };
 	    
-	    this.forAll = function(msg){
-	        this.socket.emit('message', msg);
+	    // @gameProps: static properties for one-time configuration
+	    this.initialize = function(gameProps){
+	        this.game = new Phaser.Game(gameProps.width, gameProps.height, Phaser.AUTO);
+	        this.game.state.add('FrogmanVsMinotaur', FrogmanVsMinotaur);
 	    };
 	    
-	    this.socket.on('connect', function() {
-	      this.log('[CLIENT] %s connected', this.socket.id);
-	      if(options.onConnect){
-	         options.onConnect.call(null, this.socket); 
-	      }
-	    }.bind(this));
-	    
-	    this.socket.on('message', function(message) {
-	      this.log('[CLIENT] on:message', message);
-	      if(options.onMessage){
-	         options.onMessage.call(null, message); 
-	      }
-	    }.bind(this));
-	    
+	    // @initialState: first dynamic @state object to kick off
+	    this.start = function(initialState){
+	        this.game.state.start('FrogmanVsMinotaur', true, true, { initialState: initialState });
+	    };
 	}
 	
-	module.exports = GameCLient;
+	module.exports = GameClient;
+
+/***/ },
+/* 54 */,
+/* 55 */
+/*!*****************************************!*\
+  !*** ./client/src/FrogmanVsMinotaur.js ***!
+  \*****************************************/
+/***/ function(module, exports) {
+
+	function FrogmanVsMinotaur(){
+	  
+	  var frogman, 
+	      minotaur;
+	      
+	  var keys;
+	  
+	  this.init = function(config){
+	    console.log('[Phaser] init', config);
+	  };
+	  
+	  this.preload = function(){
+	    console.log('[Phaser] preload');
+	    this.game.load.image('background', '../assets/background.gif');
+	    this.game.load.atlas('characters', '../assets/spritesheet.png', '../assets/sprites.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+	  };
+	  
+	  this.create = function(){
+	    console.log('[Phaser] create');
+	    
+	    this.game.stage.backgroundColor = "#FFFFFF";
+	    this.game.add.tileSprite(0, 0, this.game.width, this.game.height, 'background');
+	    
+	    frogman = this.game.add.sprite(350, 245, 'characters');
+	    frogman.animations.add('walk', ['02', '04', '05', '07', '09', '10'], 10, true);
+	    frogman.animations.add('attack', ['01', '03', '06', '08'], 10, true);
+	    frogman.scale.x = -1;
+	    frogman.anchor.setTo(0.5, 0.5);
+	    
+	    minotaur = this.game.add.sprite(40, 215, 'characters');
+	    minotaur.animations.add('stand', ['22'], 10, true);
+	    minotaur.animations.add('walk', ['18', '22', '25', '26'], 10, true);
+	    minotaur.animations.add('attack', ['16','20','24','27','28', '29'], 12, true);
+	    frogman.anchor.setTo(0.5, 0.5);
+	    
+	    this.game.physics.enable(minotaur, Phaser.Physics.ARCADE);
+	    
+	    keys = this.game.input.keyboard.createCursorKeys();
+	    keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+	  };
+	  
+	  this.update = function(){
+	    console.log('[Phaser] update');
+	    frogman.animations.play('attack');
+	    
+	    if(keys.right.isDown){
+	        minotaur.animations.play('walk');
+	        minotaur.body.x += 1;
+	        minotaur.scale.x = 1;
+	    }
+	    else if(keys.left.isDown){
+	        minotaur.animations.play('walk');
+	        minotaur.body.x -= 1;
+	        minotaur.scale.x = -1;
+	    }
+	    else if(keys.space.isDown){
+	        minotaur.animations.play('attack');
+	    }
+	    else {
+	        minotaur.animations.play('stand');
+	    }
+	  };
+	}
+	
+	module.exports = FrogmanVsMinotaur;
 
 /***/ }
 /******/ ]);
