@@ -1,10 +1,10 @@
-var GameClient = require('./src/GameClient.js');
+var SocketClient = require('./src/SocketClient.js');
 var Play = require('./src/game.js');
 var io = require('socket.io-client');
 
 window.onload = function(){
   
-    var gameClient = new GameClient(io, {
+    var socketClient = new SocketClient(io, {
       verbose: true, 
       onConnect: function(socket){
         addLine('[CLIENT] '+ socket.id +' connected');
@@ -22,8 +22,8 @@ window.onload = function(){
     var input = document.getElementById('message');
     
     input.addEventListener('change', function(e){
-      gameClient.forAll({
-        sender: gameClient.socket.id, 
+      socketClient.forAll({
+        sender: socketClient.socket.id, 
         payload: e.target.value
       });
       input.value = '';

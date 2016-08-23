@@ -14,9 +14,10 @@
     - restore if reconnected, drop after n timeout
 */
 
-function GameServer(io, options){
+function SocketServer(io, options){
   options = options || {};
   var verbose = options.verbose || false;
+  var noop = function(){};
   
   this.io = io;
   this.sockets = [];
@@ -26,6 +27,10 @@ function GameServer(io, options){
       console.info.apply(this, arguments);
     }
   };
+  
+  this.onConnection = options.onConnection || noop;
+  this.onDisconnect = options.onDisconnect || noop;
+  this.onMessage = options.onMessage || noop;
   
   this.broadcast = function(msg){
     this.sockets.forEach(function(socket) {
@@ -45,18 +50,21 @@ function GameServer(io, options){
     this.log('[SERVER] on:connection');
     
     this.addSocket(socket);
+    this.onConnection();
     
     socket.on('message', function(msg){
       this.log('[SERVER] socket:message', msg);
+      this.onMessage();
       this.broadcast(msg);
     }.bind(this));
     
     socket.on('disconnect', function(){
       this.log('[SERVER] socket:disconnect');
+      this.onDisconnect();
       this.removeSocket(socket);
     }.bind(this));
     
   }.bind(this));
 }
 
-module.exports = GameServer;
+module.exports = SocketServer;
