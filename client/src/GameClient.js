@@ -6,8 +6,10 @@ function GameClient(options){
     
     this.game = undefined;
     
-    this.setState = function(){
-        
+    this.setGameState = function(state){
+        if(this.game){
+            //this.game.setGameState(state);
+        }
     };
     
     // @gameProps: static properties for one-time configuration

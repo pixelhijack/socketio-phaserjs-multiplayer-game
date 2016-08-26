@@ -4,6 +4,8 @@ var io = require('socket.io-client');
 
 window.onload = function(){
   
+    var gameClient = new GameClient({});
+  
     var socketClient = new SocketClient(io, {
       verbose: true, 
       onConnect: function(socket){
@@ -11,10 +13,9 @@ window.onload = function(){
       }, 
       onMessage: function(message){
         addLine('[CLIENT] '+ message.sender +' message: \n' + message.payload);
+        gameClient.setGameState(message);
       }
     });
-    
-    var gameClient = new GameClient({});
     
     gameClient.initialize({
       width: 560,

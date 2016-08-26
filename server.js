@@ -1,6 +1,6 @@
 var http = require('http');
 var path = require('path');
-var GameServer = require('./server/GameServer.js');
+var SocketServer = require('./server/SocketServer.js');
 
 var socketio = require('socket.io');
 var express = require('express');
@@ -13,7 +13,7 @@ var server = http.createServer(router);
 
 router.use(express.static(path.resolve(__dirname, 'client')));
 
-var gameServer = new GameServer(socketio.listen(server), {
+var socketServer = new SocketServer(socketio.listen(server), {
   verbose: true
 });
 
