@@ -99,7 +99,7 @@
   \************************************/
 /***/ function(module, exports) {
 
-	function GameCLient(io, options){
+	function SocketCLient(io, options){
 	    options = options || {};
 	    var verbose = options.verbose || false;
 	    
@@ -131,7 +131,7 @@
 	    
 	}
 	
-	module.exports = GameCLient;
+	module.exports = SocketCLient;
 
 /***/ },
 /* 2 */
