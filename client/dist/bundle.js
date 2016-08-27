@@ -62,7 +62,7 @@
 	      }, 
 	      onMessage: function(message){
 	        addLine('[CLIENT] '+ message.sender +' message: \n' + message.payload);
-	        gameClient.setGameState(message);
+	        gameClient.acceptState(message);
 	      }
 	    });
 	    
@@ -70,7 +70,7 @@
 	      width: 560,
 	      height: 272
 	    });
-	    gameClient.start({});
+	    gameClient.start({}, socketClient);
 	    
 	    var input = document.getElementById('message');
 	    
@@ -148,21 +148,21 @@
 	    
 	    this.game = undefined;
 	    
-	    this.setGameState = function(state){
+	    this.acceptState = function(state){
 	        if(this.game){
-	            //this.game.setGameState(state);
+	            this.game.state.states['FrogmanVsMinotaur'].setState(state);
 	        }
 	    };
 	    
 	    // @gameProps: static properties for one-time configuration
 	    this.initialize = function(gameProps){
-	        this.game = new Phaser.Game(gameProps.width, gameProps.height, Phaser.AUTO);
+	        this.game = new Phaser.Game(gameProps.width, gameProps.height, Phaser.AUTO, 'gameContainer');
 	        this.game.state.add('FrogmanVsMinotaur', FrogmanVsMinotaur);
 	    };
 	    
 	    // @initialState: first dynamic @state object to kick off
-	    this.start = function(initialState){
-	        this.game.state.start('FrogmanVsMinotaur', true, true, { initialState: initialState });
+	    this.start = function(initialState, socketClient){
+	        this.game.state.start('FrogmanVsMinotaur', true, true, { initialState: initialState, socketClient: socketClient });
 	    };
 	}
 	
@@ -193,12 +193,18 @@
 	  this.game.physics.enable(this, Phaser.Physics.ARCADE);
 	  this.anchor.setTo(0.5, 0.5);
 	  
+	  this.noise = new Phaser.Signal();
+	  
 	  this.setState = function(action){
 	    state.queue.push(action);
 	  };
 	  
+	  this.getState = function(){
+	    return state.current;
+	  };
+	  
 	  this.updateState = function(currentState){
-	    console.log('STATE: ', currentState, state.queue.length);
+	    //console.log('STATE: ', currentState, state.queue.length);
 	    switch(currentState.type){
 	      case 'MOVE':
 	        this.body.x = currentState.isRight ? ++this.body.x : --this.body.x;
@@ -219,6 +225,7 @@
 	    var next = state.queue.shift();
 	    if(next){
 	      state.current.push(next);
+	      this.noise.dispatch(next);
 	    }
 	    if(!state.current.length){
 	      this.animations.play('idle');
@@ -274,8 +281,11 @@
 	      
 	  var keys;
 	  
+	  this.otherPlayers = undefined;
+	  
 	  this.init = function(config){
 	    console.log('[PHASER] init', config);
+	    this.otherPlayers = config.socketClient;
 	  };
 	  
 	  this.preload = function(){
@@ -296,10 +306,20 @@
 	    
 	    keys = this.game.input.keyboard.createCursorKeys();
 	    keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+	    
+	    minotaur.noise.add(this.sendState, this);
 	  };
 	  
-	  this.setGameState = function(state){
+	  this.setState = function(state){
 	    console.log('[PHASER] Game state changed', state);
+	  };
+	  
+	  this.sendState = function(event){
+	    console.log('[PHASER] sending state', event);
+	    this.otherPlayers.forAll({
+	      sender: 'minotaur-id',
+	      payload: JSON.stringify(minotaur.getState())
+	    });
 	  };
 	  
 	  this.update = function(){

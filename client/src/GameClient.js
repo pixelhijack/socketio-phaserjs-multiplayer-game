@@ -6,21 +6,21 @@ function GameClient(options){
     
     this.game = undefined;
     
-    this.setGameState = function(state){
+    this.acceptState = function(state){
         if(this.game){
-            //this.game.setGameState(state);
+            this.game.state.states['FrogmanVsMinotaur'].setState(state);
         }
     };
     
     // @gameProps: static properties for one-time configuration
     this.initialize = function(gameProps){
-        this.game = new Phaser.Game(gameProps.width, gameProps.height, Phaser.AUTO);
+        this.game = new Phaser.Game(gameProps.width, gameProps.height, Phaser.AUTO, 'gameContainer');
         this.game.state.add('FrogmanVsMinotaur', FrogmanVsMinotaur);
     };
     
     // @initialState: first dynamic @state object to kick off
-    this.start = function(initialState){
-        this.game.state.start('FrogmanVsMinotaur', true, true, { initialState: initialState });
+    this.start = function(initialState, socketClient){
+        this.game.state.start('FrogmanVsMinotaur', true, true, { initialState: initialState, socketClient: socketClient });
     };
 }
 

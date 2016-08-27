@@ -13,7 +13,7 @@ window.onload = function(){
       }, 
       onMessage: function(message){
         addLine('[CLIENT] '+ message.sender +' message: \n' + message.payload);
-        gameClient.setGameState(message);
+        gameClient.acceptState(message);
       }
     });
     
@@ -21,7 +21,7 @@ window.onload = function(){
       width: 560,
       height: 272
     });
-    gameClient.start({});
+    gameClient.start({}, socketClient);
     
     var input = document.getElementById('message');
     
