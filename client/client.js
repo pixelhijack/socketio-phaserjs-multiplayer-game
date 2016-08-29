@@ -13,7 +13,7 @@ window.onload = function(){
       }, 
       onMessage: function(message){
         addLine('[CLIENT] '+ message.sender +' message: \n' + message.payload);
-        gameClient.acceptState(message);
+        gameClient.receiveState(message);
       }
     });
     

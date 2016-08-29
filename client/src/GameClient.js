@@ -6,7 +6,7 @@ function GameClient(options){
     
     this.game = undefined;
     
-    this.acceptState = function(state){
+    this.receiveState = function(state){
         if(this.game){
             this.game.state.states['FrogmanVsMinotaur'].setState(state);
         }

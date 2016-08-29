@@ -99,16 +99,16 @@ Minotaur.prototype.constructor = Minotaur;
 */
 function FrogmanVsMinotaur(){
   
-  var frogman, 
-      minotaur;
+  var player, 
+      enemy;
       
   var keys;
   
-  this.otherPlayers = undefined;
+  this.radioBroadcast = undefined;
   
   this.init = function(config){
     console.log('[PHASER] init', config);
-    this.otherPlayers = config.socketClient;
+    this.radioBroadcast = config.socketClient;
   };
   
   this.preload = function(){
@@ -123,14 +123,14 @@ function FrogmanVsMinotaur(){
     this.game.stage.backgroundColor = "#FFFFFF";
     this.game.add.tileSprite(0, 0, this.game.width, this.game.height, 'background');
     
-    frogman = new Frogman(this.game, 350, 245, 'characters');
+    enemy = new Frogman(this.game, 350, 245, 'characters');
     
-    minotaur = new Minotaur(this.game, 40, 215, 'characters');
+    player = new Minotaur(this.game, 40, 215, 'characters');
     
     keys = this.game.input.keyboard.createCursorKeys();
     keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     
-    minotaur.noise.add(this.sendState, this);
+    player.noise.add(this.sendState, this);
   };
   
   this.setState = function(state){
@@ -139,22 +139,22 @@ function FrogmanVsMinotaur(){
   
   this.sendState = function(event){
     console.log('[PHASER] sending state', event);
-    this.otherPlayers.forAll({
+    this.radioBroadcast.forAll({
       sender: 'minotaur-id',
-      payload: JSON.stringify(minotaur.getState())
+      payload: JSON.stringify(player.getState())
     });
   };
   
   this.update = function(){
     console.log('[PHASER] update');
-    frogman.animations.play('attack');
+    enemy.setState({ type: 'ATTACK' });
       
     if(keys.right.isDown){
-      minotaur.setState({ type: 'MOVE', isRight: true });
+      player.setState({ type: 'MOVE', isRight: true });
     } else if(keys.left.isDown){
-      minotaur.setState({ type: 'MOVE', isRight: false });
+      player.setState({ type: 'MOVE', isRight: false });
     }else if(keys.space.isDown){
-      minotaur.setState({ type: 'ATTACK' });
+      player.setState({ type: 'ATTACK' });
     }
   };
 }
