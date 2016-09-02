@@ -21,6 +21,13 @@ function SocketCLient(io, options){
       }
     }.bind(this));
     
+    this.socket.on('handshake', function(handshake) {
+      this.log('[CLIENT] on:handshake', handshake);
+      if(options.onHandshake){
+         options.onHandshake.call(null, handshake); 
+      }
+    }.bind(this));
+    
     this.socket.on('message', function(message) {
       this.log('[CLIENT] on:message', message);
       if(options.onMessage){

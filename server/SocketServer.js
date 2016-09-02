@@ -17,8 +17,7 @@
 function SocketServer(io, options){
   options = options || {};
   var verbose = options.verbose || false;
-  var noop = function(){};
-  
+
   this.io = io;
   this.sockets = [];
   
@@ -27,10 +26,6 @@ function SocketServer(io, options){
       console.log.apply(this, Array.prototype.slice.call(arguments));
     }
   };
-  
-  this.onConnection = options.onConnection || noop;
-  this.onDisconnect = options.onDisconnect || noop;
-  this.onMessage = options.onMessage || noop;
   
   this.broadcast = function(msg){
     this.sockets.forEach(function(socket) {
@@ -51,18 +46,19 @@ function SocketServer(io, options){
     this.log('[SERVER] on:connection');
     
     this.addSocket(socket);
-    this.onConnection();
+
+    socket.emit('handshake', {
+      role: !!(this.sockets.length % 2) ? 'Minotaur' : 'Frogman'
+    });
     
     socket.on('message', function(msg){
       this.log('[SERVER] socket:message', msg);
-      this.onMessage();
       // send all clients except sender
       socket.broadcast.emit('message', msg);
     }.bind(this));
     
     socket.on('disconnect', function(){
       this.log('[SERVER] socket:disconnect');
-      this.onDisconnect();
       this.removeSocket(socket);
     }.bind(this));
     

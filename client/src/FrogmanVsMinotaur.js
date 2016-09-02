@@ -14,6 +14,8 @@ function Creature(game, x, y, sprite){
   Phaser.Sprite.call(this, game, x, y, sprite);
   this.game.add.existing(this);
   this.game.physics.enable(this, Phaser.Physics.ARCADE);
+  this.body.gravity.y = 500;
+  this.body.collideWorldBounds = true;
   this.anchor.setTo(0.5, 0.5);
   
   this.noise = new Phaser.Signal();
@@ -71,6 +73,7 @@ Creature.prototype.constructor = Creature;
 */
 function Frogman(game, x, y, sprite){
   Creature.call(this, game, x, y, sprite);
+  this.animations.add('idle', ['02'], 10, true);
   this.animations.add('walk', ['02', '04', '05', '07', '09', '10'], 10, true);
   this.animations.add('attack', ['01', '03', '06', '08'], 10, true);
   this.scale.x = -1;
@@ -84,8 +87,7 @@ Frogman.prototype.constructor = Frogman;
 */
 function Minotaur(game, x, y, sprite){
   Creature.call(this, game, x, y, sprite);
-  this.anchor.setTo(0.5, 0);
-  
+
   this.animations.add('idle', ['22'], 10, true);
   this.animations.add('walk', ['18', '22', '25', '26'], 10, true);
   this.animations.add('attack', ['16','20','24','27','28', '29'], 12, true);
@@ -99,16 +101,23 @@ Minotaur.prototype.constructor = Minotaur;
 */
 function FrogmanVsMinotaur(){
   
+  var Character = {
+    'Frogman': Frogman,
+    'Minotaur': Minotaur
+  };
+  
   var player, 
       enemy;
       
   var keys;
   
-  this.socket = undefined;
+  this.socketClient = undefined;
+  this.role = undefined;
 
   this.init = function(config){
     console.log('[PHASER] init', config);
     this.socketClient = config.socketClient;
+    this.role = config.initialState.role;
   };
   
   this.preload = function(){
@@ -125,7 +134,7 @@ function FrogmanVsMinotaur(){
     
     enemy = new Frogman(this.game, 350, 245, 'characters');
     
-    player = new Minotaur(this.game, 40, 215, 'characters');
+    player = new Character[this.role](this.game, 40, 215, 'characters');
     
     keys = this.game.input.keyboard.createCursorKeys();
     keys.space = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);

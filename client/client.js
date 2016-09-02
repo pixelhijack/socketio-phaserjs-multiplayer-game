@@ -11,17 +11,18 @@ window.onload = function(){
       onConnect: function(socket){
         addLine('[CLIENT] '+ socket.id +' connected');
       }, 
+      onHandshake: function(handshake){
+        gameClient.initialize({
+          width: 560,
+          height: 272
+        });
+        gameClient.start(handshake, socketClient);
+      },
       onMessage: function(message){
         addLine('[CLIENT] '+ message.sender +' message: \n' + message.payload);
         gameClient.receiveState(message);
       }
     });
-    
-    gameClient.initialize({
-      width: 560,
-      height: 272
-    });
-    gameClient.start({}, socketClient);
     
     var input = document.getElementById('message');
     
