@@ -24,7 +24,7 @@ function SocketServer(io, options){
   
   this.log = function(){
     if(verbose){
-      console.info.apply(this, arguments);
+      console.log.apply(this, Array.prototype.slice.call(arguments));
     }
   };
   
@@ -34,19 +34,20 @@ function SocketServer(io, options){
   
   this.broadcast = function(msg){
     this.sockets.forEach(function(socket) {
-      socket.emit('message', msg);
+      socket.broadcast.emit('message', msg);
     });
   };
   
   this.addSocket = function(socket){
     this.sockets.push(socket);
+    this.log('[SERVER] % clients connected', this.sockets.length);
   };
   
   this.removeSocket = function(socket){
     this.sockets.splice(this.sockets.indexOf(socket), 1);
   };
   
-  io.on('connection', function(socket){
+  io.sockets.on('connection', function(socket){
     this.log('[SERVER] on:connection');
     
     this.addSocket(socket);
@@ -55,7 +56,8 @@ function SocketServer(io, options){
     socket.on('message', function(msg){
       this.log('[SERVER] socket:message', msg);
       this.onMessage();
-      this.broadcast(msg);
+      // send all clients except sender
+      socket.broadcast.emit('message', msg);
     }.bind(this));
     
     socket.on('disconnect', function(){
