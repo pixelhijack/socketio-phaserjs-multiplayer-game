@@ -142,8 +142,12 @@ function FrogmanVsMinotaur(){
     player.noise.add(this.sendState, this);
   };
   
+  this.addEnemy = function(enemy){
+    console.log('[PHASER] new enemy appeared!', enemy);
+  };
+  
   this.setState = function(state){
-    console.log('[PHASER] Game state changed', state);
+    console.log('[PHASER] receiving state', state);
   };
   
   this.sendState = function(event){

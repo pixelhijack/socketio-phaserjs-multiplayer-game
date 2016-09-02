@@ -156,6 +156,12 @@
 	    
 	    this.game = undefined;
 	    
+	    this.addEnemy = function(enemy) {
+	        if(this.game){
+	            this.game.state.states['FrogmanVsMinotaur'].addEnemy(enemy);
+	        }
+	    };
+	    
 	    this.receiveState = function(state){
 	        if(this.game){
 	            this.game.state.states['FrogmanVsMinotaur'].setState(state);
@@ -333,8 +339,12 @@
 	    player.noise.add(this.sendState, this);
 	  };
 	  
+	  this.addEnemy = function(enemy){
+	    console.log('[PHASER] new enemy appeared!', enemy);
+	  };
+	  
 	  this.setState = function(state){
-	    console.log('[PHASER] Game state changed', state);
+	    console.log('[PHASER] receiving state', state);
 	  };
 	  
 	  this.sendState = function(event){

@@ -6,6 +6,12 @@ function GameClient(options){
     
     this.game = undefined;
     
+    this.addEnemy = function(enemy) {
+        if(this.game){
+            this.game.state.states['FrogmanVsMinotaur'].addEnemy(enemy);
+        }
+    };
+    
     this.receiveState = function(state){
         if(this.game){
             this.game.state.states['FrogmanVsMinotaur'].setState(state);
