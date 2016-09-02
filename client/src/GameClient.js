@@ -20,7 +20,13 @@ function GameClient(options){
     
     // @initialState: first dynamic @state object to kick off
     this.start = function(initialState, socketClient){
-        this.game.state.start('FrogmanVsMinotaur', true, true, { initialState: initialState, socketClient: socketClient });
+        this.game.state.start('FrogmanVsMinotaur', 
+            true, 
+            true, 
+            { 
+                initialState: initialState, 
+                socketClient: socketClient 
+            });
     };
 }
 

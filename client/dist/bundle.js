@@ -162,7 +162,13 @@
 	    
 	    // @initialState: first dynamic @state object to kick off
 	    this.start = function(initialState, socketClient){
-	        this.game.state.start('FrogmanVsMinotaur', true, true, { initialState: initialState, socketClient: socketClient });
+	        this.game.state.start('FrogmanVsMinotaur', 
+	            true, 
+	            true, 
+	            { 
+	                initialState: initialState, 
+	                socketClient: socketClient 
+	            });
 	    };
 	}
 	
@@ -281,11 +287,11 @@
 	      
 	  var keys;
 	  
-	  this.radioBroadcast = undefined;
-	  
+	  this.socket = undefined;
+	
 	  this.init = function(config){
 	    console.log('[PHASER] init', config);
-	    this.radioBroadcast = config.socketClient;
+	    this.socketClient = config.socketClient;
 	  };
 	  
 	  this.preload = function(){
@@ -316,8 +322,8 @@
 	  
 	  this.sendState = function(event){
 	    console.log('[PHASER] sending state', event);
-	    this.radioBroadcast.forAll({
-	      sender: 'minotaur-id',
+	    this.socketClient.forAll({
+	      sender: this.socketClient.socket.id,
 	      payload: JSON.stringify(player.getState())
 	    });
 	  };
