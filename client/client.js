@@ -18,6 +18,9 @@ window.onload = function(){
         });
         gameClient.start(handshake, socketClient);
       },
+      onNewPlayerJoined: function(enemy){
+        gameClient.addEnemy(enemy);
+      },
       onMessage: function(message){
         addLine('[CLIENT] '+ message.sender +' message: \n' + message.payload);
         gameClient.receiveState(message);

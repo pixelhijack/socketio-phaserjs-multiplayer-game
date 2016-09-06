@@ -47,7 +47,8 @@ function SocketServer(io, options){
     
     this.addSocket(socket);
     
-    var newPlayer = !!(this.sockets.length % 2) ? 'Minotaur' : 'Frogman';
+    var newPlayer = !!(this.sockets.length % 2) ? 'Minotaur' : 'Frogman', 
+        enemy = !!(this.sockets.length % 2) ? 'Frogman' : 'Minotaur';
     
     // tell the player his character role
     socket.emit('handshake', {
@@ -56,7 +57,7 @@ function SocketServer(io, options){
     
     // tell the others to instantiate an enemy
     socket.broadcast.emit('newplayer', {
-      role: newPlayer
+      role: enemy
     });
     
     socket.on('message', function(msg){

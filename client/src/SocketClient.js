@@ -28,6 +28,13 @@ function SocketCLient(io, options){
       }
     }.bind(this));
     
+    this.socket.on('newplayer', function(player){
+      this.log('[CLIENT] on:newplayer', player); 
+      if(options.onNewPlayerJoined){
+         options.onNewPlayerJoined.call(null, player); 
+      }
+    }.bind(this));
+    
     this.socket.on('message', function(message) {
       this.log('[CLIENT] on:message', message);
       if(options.onMessage){

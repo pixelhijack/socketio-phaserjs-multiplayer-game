@@ -67,6 +67,9 @@
 	        });
 	        gameClient.start(handshake, socketClient);
 	      },
+	      onNewPlayerJoined: function(enemy){
+	        gameClient.addEnemy(enemy);
+	      },
 	      onMessage: function(message){
 	        addLine('[CLIENT] '+ message.sender +' message: \n' + message.payload);
 	        gameClient.receiveState(message);
@@ -127,6 +130,13 @@
 	      this.log('[CLIENT] on:handshake', handshake);
 	      if(options.onHandshake){
 	         options.onHandshake.call(null, handshake); 
+	      }
+	    }.bind(this));
+	    
+	    this.socket.on('newplayer', function(player){
+	      this.log('[CLIENT] on:newplayer', player); 
+	      if(options.onNewPlayerJoined){
+	         options.onNewPlayerJoined.call(null, player); 
 	      }
 	    }.bind(this));
 	    
